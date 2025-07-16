@@ -13,6 +13,11 @@ public class PlayerMovemment : MonoBehaviour
 
     Rigidbody2D rb;
     BoxCollider2D bc;
+    GameObject item;
+
+    public bool holding = false;
+    public bool interact;
+    public bool canInteract;
 
     Vector2 moveInput;
 
@@ -26,7 +31,12 @@ public class PlayerMovemment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (holding && interact)
+        {
+            item.GetComponent<ItemLog>().follow = false;
+            //item = null;
+            holding = false;
+        }
     }
 
     private void FixedUpdate()
@@ -47,26 +57,40 @@ public class PlayerMovemment : MonoBehaviour
 
     public void OnAction(InputAction.CallbackContext context)
     {
-
+        interact = context.performed ? true : false; 
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "ladder")
+        if (collision.gameObject.tag == "Ladder")
         {
             ladder = true;
             rb.gravityScale = 0;
-            //collision.gameObject.GetComponent<BoxCollider2D>().enabled = false;
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (interact)
+        {
+            if (collision.gameObject.tag == "Creator")
+            {
+                StartCoroutine(TimeOutAction());
+                GameObject c = Instantiate(collision.gameObject.GetComponent<ItemCreator>().creation);
+                c.GetComponent<ItemLog>().player = gameObject.GetComponent<PlayerMovemment>();
+                c.GetComponent<ItemLog>().follow = true;
+                holding = true;
+                item = c;
+            }
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "ladder")
+        if (collision.gameObject.tag == "Ladder")
         {
             ladder = false;
             rb.gravityScale = 1;
-            //collision.gameObject.GetComponent<BoxCollider2D>().enabled = true;
             InLadder(1f);
         }
     }
@@ -80,6 +104,13 @@ public class PlayerMovemment : MonoBehaviour
     {
         InLadder(0.75f);
         rb.velocity = new Vector2(rb.velocity.x, moveInput.y * moveSpeed);
+    }
+
+    IEnumerator TimeOutAction()
+    {
+        canInteract = false;
+        yield return new WaitForSeconds(1f);
+        canInteract = true;
     }
 
 }
