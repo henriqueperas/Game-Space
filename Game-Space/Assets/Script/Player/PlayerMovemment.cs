@@ -13,11 +13,16 @@ public class PlayerMovemment : MonoBehaviour
 
     Rigidbody2D rb;
     BoxCollider2D bc;
-    GameObject item;
+    [SerializeField] GameObject itemHolding;
+    [SerializeField] GameObject creator;
 
     public bool holding = false;
     public bool interact;
     public bool canInteract;
+
+    [SerializeField] bool colliderCreator;
+
+    int teste = 0;
 
     Vector2 moveInput;
 
@@ -31,11 +36,29 @@ public class PlayerMovemment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (holding && interact)
+
+        colliderCreator = creator != null ? true : false;
+
+        if (holding && interact && canInteract)
         {
-            item.GetComponent<ItemLog>().follow = false;
-            //item = null;
+            StartCoroutine(TimeOutAction());
+            itemHolding.GetComponent<ItemLog>().follow = false;
+            itemHolding.GetComponent<Rigidbody2D>().gravityScale = 1;
+            itemHolding.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             holding = false;
+        }
+
+        if (colliderCreator && interact)
+        {
+            teste+=1;
+            print(teste);
+        }
+
+        if(teste >= 200)
+        {
+            teste = 0;
+            StartCoroutine(TimeOutAction());
+            InteractionItem(creator.gameObject);
         }
     }
 
@@ -71,22 +94,44 @@ public class PlayerMovemment : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
+        if (collision.gameObject.tag == "Creator")
+        {
+            creator = collision.gameObject;
+        }
+
         if (interact)
         {
-            if (collision.gameObject.tag == "Creator")
+            /*
+
+            //&& canInteract
+            if (collision.gameObject.tag == "Creator" )
+            {
+                colliderCreator = true;
+                
+                //StartCoroutine(TimeOutAction());
+                //InteractionItem(collision.gameObject);
+            }
+            */
+            if (collision.gameObject.tag == "Item" && canInteract && !holding)
             {
                 StartCoroutine(TimeOutAction());
-                GameObject c = Instantiate(collision.gameObject.GetComponent<ItemCreator>().creation);
-                c.GetComponent<ItemLog>().player = gameObject.GetComponent<PlayerMovemment>();
-                c.GetComponent<ItemLog>().follow = true;
+                itemHolding = collision.gameObject;
+                collision.GetComponent<ItemLog>().follow = true;
                 holding = true;
-                item = c;
             }
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if(collision.gameObject.tag == "Creator")
+        {
+            creator = null;
+            //colliderCreator = false;
+            //StartCoroutine(TimeOutAction());
+            //InteractionItem(collision.gameObject);
+        }
+
         if (collision.gameObject.tag == "Ladder")
         {
             ladder = false;
@@ -106,10 +151,28 @@ public class PlayerMovemment : MonoBehaviour
         rb.velocity = new Vector2(rb.velocity.x, moveInput.y * moveSpeed);
     }
 
+    void InteractionItem(GameObject item)
+    {
+        holding = true;
+        itemHolding = Instantiate(item.gameObject.GetComponent<ItemCreator>().creation);
+        itemHolding.GetComponent<ItemLog>().player = gameObject.GetComponent<PlayerMovemment>();
+        itemHolding.GetComponent<ItemLog>().follow = true;
+        
+    }
+
+    void DropItem()
+    {
+        StartCoroutine(TimeOutAction());
+        itemHolding.GetComponent<ItemLog>().follow = false;
+        itemHolding.GetComponent<Rigidbody2D>().gravityScale = 1;
+        itemHolding.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        holding = false;
+    }
+
     IEnumerator TimeOutAction()
     {
         canInteract = false;
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         canInteract = true;
     }
 

@@ -27,3 +27,15 @@ GERADOR - BATERIA DE IONS - fica no deposito
 SISEMA DE COMUNICAÇÃO - PLACA DE CIRCUITO - fica no deposito 
 
 SISTEMA DE PILOTAGEM - BOBINAS
+
+
+
+
+
+
+
+COISAS PRA FAZER
+
+-faver a logica de arrumar alguma coisa, verificando se é o tem certo
+*COMO FAZER: quando detectar quanestá com um ponto para arrumar (igual nos criadores), usar a mesma logica de criar para o tempo de consertar, destruir o item e mudar o estado de quebrado para arrumado
+-fazer a estrutura da nave
