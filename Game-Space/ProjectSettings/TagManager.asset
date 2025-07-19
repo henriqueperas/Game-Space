@@ -8,6 +8,7 @@ TagManager:
   - Ladder
   - Creator
   - Item
+  - Broken
   layers:
   - Default
   - TransparentFX

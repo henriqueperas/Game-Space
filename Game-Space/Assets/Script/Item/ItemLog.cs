@@ -10,6 +10,8 @@ public class ItemLog : MonoBehaviour
 
     public bool follow = true;
 
+    public int itemID;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,7 +36,6 @@ public class ItemLog : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ground")
         {
-            print("aqui");
             rb.gravityScale = 0;
             rb.velocity = Vector3.zero;
         }
