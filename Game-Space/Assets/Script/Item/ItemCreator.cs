@@ -41,6 +41,7 @@ public class ItemCreator : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
+            player = collision.gameObject.GetComponent<PlayerMovemment>();
             collision.gameObject.GetComponent<PlayerMovemment>().teste = progressCreation;
         }
     }
@@ -58,6 +59,7 @@ public class ItemCreator : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
+            player = null;
             collision.gameObject.GetComponent<PlayerMovemment>().teste = 0;
             collision.gameObject.GetComponent<PlayerMovemment>().creator = null;
         }

@@ -16,8 +16,12 @@ public class Broken : MonoBehaviour
 
     private void Update()
     {
-        Repairing();
-        BrokenInteract();
+
+        if(player != null)
+        {
+            Repairing();
+            BrokenInteract();
+        }
 
         if (progressRepair >= 200)
         {

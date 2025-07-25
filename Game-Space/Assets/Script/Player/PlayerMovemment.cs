@@ -17,11 +17,18 @@ public class PlayerMovemment : MonoBehaviour
     public GameObject creator;
     public GameObject broken;
 
+
+    public Ship ship; 
+
     public bool holding = false;
     public bool interact;
     public bool canInteract;
 
+    [SerializeField]  bool shipControlling = false;
+
     [SerializeField] bool colliderCreator;
+
+    Animator anim;
 
     public int teste = 0;
 
@@ -34,6 +41,7 @@ public class PlayerMovemment : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         bc = GetComponent<BoxCollider2D>();
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -51,6 +59,24 @@ public class PlayerMovemment : MonoBehaviour
             holding = false;
         }
 
+        if(moveInput.x == 1)
+        {
+            gameObject.transform.localScale = new Vector2(1, 1);
+        }
+        else if(moveInput.x == -1)
+        {
+            gameObject.transform.localScale = new Vector2(-1, 1);
+        }
+
+        if (moveInput.x != 0)
+        {
+            anim.SetBool("walking", true);
+        }
+        else
+        {
+            anim.SetBool("walking", false);
+        }
+
 
     }
 
@@ -62,11 +88,26 @@ public class PlayerMovemment : MonoBehaviour
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        moveInput = context.ReadValue<Vector2>();
 
-        if (ladder)
+        if (!shipControlling)
         {
-            OnMoveLadder();
+            moveInput = context.ReadValue<Vector2>();
+
+            if (ladder)
+            {
+                OnMoveLadder();
+            }
+        }
+        
+    }
+
+    public void OnMoveShip(InputAction.CallbackContext context)
+    {
+        if (shipControlling)
+        {
+            moveInput = context.ReadValue<Vector2>();
+
+            ship.ShipMovemment(moveInput.x, moveInput.y);
         }
     }
 
@@ -97,6 +138,11 @@ public class PlayerMovemment : MonoBehaviour
                 collision.GetComponent<ItemLog>().follow = true;
                 itemIDHolding = collision.GetComponent<ItemLog>().itemID;
                 holding = true;
+            }
+
+            if(collision.gameObject.tag == "Controller" && canInteract)
+            {
+                shipControlling = true;
             }
         }
     }
