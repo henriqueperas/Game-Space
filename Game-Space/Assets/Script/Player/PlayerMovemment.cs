@@ -8,15 +8,18 @@ using UnityEngine.XR;
 public class PlayerMovemment : MonoBehaviour
 {
     public int moveSpeed;
-
-    [SerializeField] bool ladder;
+    bool ladder;
+    Vector2 moveInput;
 
     Rigidbody2D rb;
     BoxCollider2D bc;
+    Animator anim;
+
+    bool ladderAnim = false;
+
     public GameObject itemHolding;
     public GameObject creator;
     public GameObject broken;
-
 
     public Ship ship; 
 
@@ -25,16 +28,13 @@ public class PlayerMovemment : MonoBehaviour
     public bool canInteract;
 
     [SerializeField]  bool shipControlling = false;
-
     [SerializeField] bool colliderCreator;
 
-    Animator anim;
-
     public int teste = 0;
-
     public int itemIDHolding;
 
-    Vector2 moveInput;
+    int fallSpeed = 4;
+    bool fall = true;
 
     // Start is called before the first frame update
     void Start()
@@ -47,6 +47,7 @@ public class PlayerMovemment : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Gravity();
 
         colliderCreator = creator != null ? true : false;
 
@@ -68,24 +69,41 @@ public class PlayerMovemment : MonoBehaviour
             gameObject.transform.localScale = new Vector2(-1, 1);
         }
 
-        if (moveInput.x != 0)
-        {
-            anim.SetBool("walking", true);
+        if (shipControlling){
+            if (interact)
+            {
+                shipControlling = false;
+            }
+            else
+            {
+                ship.ShipMovemment(moveInput.x, moveInput.y);
+            }
         }
-        else
-        {
-            anim.SetBool("walking", false);
-        }
-
 
     }
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
-        // animação de movimento
+        if (!shipControlling)
+        {
+            rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
+        }
+
+        if (ladder && moveInput.y != 0)
+        {
+            ladderAnim = true;
+        }
+        else if (!ladder)
+        {
+            ladderAnim = false;
+        }
+
+        print(ladderAnim);
+
+        Animatons();
     }
 
+    #region Inputs
     public void OnMove(InputAction.CallbackContext context)
     {
 
@@ -106,8 +124,6 @@ public class PlayerMovemment : MonoBehaviour
         if (shipControlling)
         {
             moveInput = context.ReadValue<Vector2>();
-
-            ship.ShipMovemment(moveInput.x, moveInput.y);
         }
     }
 
@@ -116,6 +132,9 @@ public class PlayerMovemment : MonoBehaviour
         interact = context.performed ? true : false; 
     }
 
+    #endregion
+
+    #region Triggers
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Ladder")
@@ -153,11 +172,33 @@ public class PlayerMovemment : MonoBehaviour
         if (collision.gameObject.tag == "Ladder")
         {
             ladder = false;
-            rb.gravityScale = 1;
+            //rb.gravityScale = 1;
             InLadder(1f);
         }
     }
 
+    #endregion
+
+    #region Collisions
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Ground")
+        {
+            fall = false;
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Ground")
+        {
+            fall = true;
+        }
+    }
+
+    #endregion
+
+    #region Ladder
     public void InLadder(float size)
     {
         bc.size = new Vector2(size, bc.size.y);
@@ -169,6 +210,9 @@ public class PlayerMovemment : MonoBehaviour
         rb.velocity = new Vector2(rb.velocity.x, moveInput.y * moveSpeed);
     }
 
+    #endregion
+
+    #region Interaction
     public void InteractionItem(GameObject item)
     {
         print("aqui");
@@ -187,12 +231,31 @@ public class PlayerMovemment : MonoBehaviour
         itemHolding.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
         holding = false;
     }
-
     public IEnumerator TimeOutAction()
     {
         canInteract = false;
         yield return new WaitForSeconds(0.5f);
         canInteract = true;
+    }
+
+    #endregion
+
+    #region Animations
+
+    void Animatons()
+    {
+        anim.SetBool("walking", moveInput.x != 0 ? true : false);
+
+        anim.SetBool("ladder", ladderAnim);
+    }
+
+    #endregion
+    void Gravity()
+    {
+        if (fall && !ladder)
+        {
+            rb.velocity = -transform.up * fallSpeed;
+        }
     }
 
 }

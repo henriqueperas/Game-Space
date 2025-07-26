@@ -4,17 +4,19 @@ using UnityEngine;
 
 public class Ship : MonoBehaviour
 {
+    [SerializeField] GameObject ship;
+
+
     float speed = 10f;
     public void ShipMovemment(float x, float y)
     {
-
-        print(x + y);
+        print(x);
         if(x >= 0)
         {
             //gameObject.transform.localRotation = new Quaternion(0, gameObject.transform.localRotation.y + y, 0, speed);
-            gameObject.transform.Rotate(new Vector3(0,y,0), Space.World);
+            ship.transform.Rotate(new Vector3(0,0,y), Space.Self);
+            ship.transform.position += ship.transform.right * x;
 
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x + x, 0,0);
         }
     }
 }
